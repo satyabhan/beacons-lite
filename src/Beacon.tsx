@@ -18,6 +18,7 @@ const useStyles = makeStyles((theme) => ({
 			marginTop: theme.spacing(2),
 			marginBottom: theme.spacing(1),
 			width: '100%',
+			textTransform: 'none'
 		},
 	},
 }))
@@ -28,8 +29,18 @@ function Beacon(props: any) {
 	const [linkTitle, setLinkTitle] = useState(beacon.linkTitle)
 	const [linkUrl, setLinkUrl] = useState(beacon.linkUrl)
 
+	const isValidUrl = (url: string) => {
+		try {
+			new URL(url);
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+		return true;
+	};
+
 	const isBeaconValid = () => {
-		return linkTitle !== '' && linkUrl !== ''
+		return linkTitle !== '' && linkUrl !== '' && isValidUrl(linkUrl)
 	}
 
 	const updateBeacon = (e: React.FormEvent<EventTarget>) => {
