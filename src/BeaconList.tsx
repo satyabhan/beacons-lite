@@ -1,7 +1,6 @@
-import React, {useState, useEffect} from "react";
+import React from "react";
 import Beacon from "./Beacon";
-import Divider from "@material-ui/core/Divider";
-import {beaconsRef} from "./firebase";
+
 function BeaconList(props: any) {
   const {beacons, editMode} = props
   return (

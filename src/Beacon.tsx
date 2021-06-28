@@ -2,8 +2,8 @@ import React, {useState} from "react"
 import IconButton from "@material-ui/core/IconButton"
 import DeleteIcon from "@material-ui/icons/Delete"
 import "./Beacon.scss"
-import {beaconsRef} from "./firebase"
-import {Button, Grid, makeStyles} from "@material-ui/core"
+import {beaconsRef, increment} from "./firebase"
+import {Button, Grid, makeStyles, Typography, Switch, FormControlLabel} from "@material-ui/core"
 import TextField from '@material-ui/core/TextField'
 import Divider from '@material-ui/core/Divider'
 
@@ -18,9 +18,17 @@ const useStyles = makeStyles((theme) => ({
 			marginTop: theme.spacing(2),
 			marginBottom: theme.spacing(1),
 			width: '100%',
-			textTransform: 'none'
+			textTransform: 'none',
+			borderRadius: 0,
 		},
+		'& .MuiTypography-root': {
+			padding: theme.spacing(1),
+		},
+
 	},
+	round: {
+		borderRadius: '8px !important',
+	}
 }))
 
 function Beacon(props: any) {
@@ -29,18 +37,24 @@ function Beacon(props: any) {
 	const [linkTitle, setLinkTitle] = useState(beacon.linkTitle)
 	const [linkUrl, setLinkUrl] = useState(beacon.linkUrl)
 
-	const isValidUrl = (url: string) => {
+	const validUrl = () => {
+		if (!linkUrl) return false
 		try {
-			new URL(url);
+			new URL(linkUrl)
 		} catch (e) {
-			console.error(e);
-			return false;
+			//console.error(e);
+			return false
 		}
-		return true;
-	};
+		return true
+	}
 
-	const isBeaconValid = () => {
-		return linkTitle !== '' && linkUrl !== '' && isValidUrl(linkUrl)
+	const validTitle = () => {
+		return !!linkTitle;
+
+	}
+
+	const validBeacon = () => {
+		return validTitle() && validUrl()
 	}
 
 	const updateBeacon = (e: React.FormEvent<EventTarget>) => {
@@ -48,9 +62,10 @@ function Beacon(props: any) {
 		const newBeacon = {
 			linkTitle: linkTitle,
 			linkUrl: linkUrl,
-			isValid: isBeaconValid(),
+			isValid: validBeacon(),
 		}
-		beaconsRef.child(beacon.id).set(newBeacon)
+		console.log('newBeacon', newBeacon)
+		beaconsRef.child(beacon.id).update(newBeacon)
 	}
 
 	return (
@@ -58,11 +73,11 @@ function Beacon(props: any) {
 			<Grid container className={classes.root}>
 				<Grid item xs={12}>
 					<TextField
-						id="beacon-title"
 						value={linkTitle}
 						onChange={(e) => {
 							setLinkTitle(e.target.value)
 						}}
+						error={!validTitle()}
 						onBlur={updateBeacon}
 						label="Beacon title"
 						variant="outlined"
@@ -70,32 +85,53 @@ function Beacon(props: any) {
 				</Grid>
 				<Grid item xs={12}>
 					<TextField
-						id="beacon-url"
 						value={linkUrl}
 						onChange={(e) => {
 							setLinkUrl(e.target.value)
 						}}
+						error={!validUrl()}
 						onBlur={updateBeacon}
 						label="Beacon url"
 						variant="outlined"
 					/>
 				</Grid>
-				<Grid item xs={12} style={{textAlign: 'right'}}>
+				<Grid item xs={12} container justify={'space-between'} alignContent={'center'}>
+					<FormControlLabel
+						control={<Switch
+							edge="end" checked={beacon.makeRound} onChange={(e) => {
+							const newBeacon = {
+								makeRound: !beacon.makeRound,
+							}
+							beaconsRef.child(beacon.id).update(newBeacon)
+						}}
+							inputProps={{ "aria-labelledby": "switch-list-label-bluetooth" }}
+						/>}
+						label="Circular"
+					/>
+					<Typography variant={'h5'}>
+						{beacon.totalClicks? 'Clicks: ' + beacon.totalClicks : ''}
+					</Typography>
 					<IconButton aria-label="delete" onClick={e => beaconsRef.child(beacon.id).remove()}>
 						<DeleteIcon fontSize="large"/>
 					</IconButton>
 				</Grid>
 				{divider && <Grid item xs={12}>
-          	<Divider/>
-        	</Grid>
+          <Divider/>
+        </Grid>
 				}
 			</Grid> :
 			<Grid container className={classes.root}>
 				{beacon.isValid && <Grid item xs={12}>
-						<Button color={'primary'} variant={'outlined'} type="submit" fullWidth>
-							{beacon.linkTitle}
-						</Button>
-					</Grid>
+          <Button color={'primary'} className={beacon.makeRound? classes.round : ''} variant={'outlined'} size={'large'}  id={beacon.id} type="submit" fullWidth onClick={(e) => {
+						e.preventDefault()
+						const newBeacon = {
+							totalClicks: increment,
+						}
+						beaconsRef.child(beacon.id).update(newBeacon)
+					}}>
+						{beacon.linkTitle}
+          </Button>
+        </Grid>
 				}
 			</Grid>
 	)

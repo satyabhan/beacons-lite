@@ -1,5 +1,5 @@
-import firebase from 'firebase/app'
-import "firebase/database"
+import firebase from 'firebase'
+
 const config = {
     apiKey: process.env.REACT_APP_APIKEY,
     authDomain: process.env.REACT_APP_AUTHDOMAIN,
@@ -13,4 +13,5 @@ const config = {
 firebase.initializeApp(config);
 const databaseRef = firebase.database().ref();
 export const beaconsRef = databaseRef.child("beacons")
+export const increment = firebase.database.ServerValue.increment(1)
 export default firebase;

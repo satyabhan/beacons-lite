@@ -9,6 +9,7 @@ function AddBeacon() {
     const beacon = {
       linkTitle: '',
       linkUrl: '',
+      makeRound: false,
       isValid: false,
     };
     beaconsRef.push(beacon);
